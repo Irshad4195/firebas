@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase/Widget.dart';
+import 'package:flutter_firebase/email_signup.dart';
 import 'package:flutter_firebase/home_screen.dart';
 
 class EmailLoginOption extends StatefulWidget {
@@ -81,6 +82,10 @@ class _EmailLoginOptionState extends State<EmailLoginOption> {
           UiHelper.CustomElevatedButton("Login", () {
             SignIn(emailController.text.toString(),
                 passwordController.text.toString());
+          }),
+          UiHelper.CustomElevatedButton("SignUp", () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => SignUp()));
           }),
           UiHelper.CustomElevatedButton("Login with Phone", () {}),
         ],

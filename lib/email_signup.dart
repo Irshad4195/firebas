@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+//import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase/Widget.dart';
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_firebase/email_login.dart';
+import 'package:flutter_firebase/home_screen.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -14,9 +17,13 @@ class SignUp extends StatefulWidget {
 class _SignUpState extends State<SignUp> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
 
-  SignUp(String email, String password) async {
-    if (email == "" && password == "" || email == "" || password == "") {
+  SignUp(String email, String password, String name) async {
+    if (email == "" && password == "" && name == "" ||
+        email == "" ||
+        password == "" ||
+        name == "") {
       return showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -38,18 +45,31 @@ class _SignUpState extends State<SignUp> {
         userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password)
             .then((value) {
-          AlertDialog(
-            title: const Text("User Created"),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text("OK"),
-              )
-            ],
-          );
-          return null;
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text("User Created"),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text("OK"),
+                    )
+                  ],
+                );
+              }).then((value) {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => HomeScreen()));
+          }).then((value) {
+            FirebaseFirestore.instance.collection("Users").doc(email).set({
+              "Name": nameController.text.toString(),
+              "Email": emailController.text.toString()
+            });
+          }).then((value) {
+            log("User Created");
+          });
         });
       } on FirebaseAuthException catch (e) {
         showDialog(
@@ -84,11 +104,14 @@ class _SignUpState extends State<SignUp> {
           const SizedBox(
             height: 20,
           ),
+          UiHelper.customTextField("Enter Profile Name", false, nameController),
           UiHelper.customTextField("Enter Email", false, emailController),
           UiHelper.customTextField("Enter Password", true, passwordController),
           UiHelper.CustomElevatedButton("SignUp", () {
-            SignUp(emailController.text.toString(),
-                passwordController.text.toString());
+            SignUp(
+                emailController.text.toString(),
+                passwordController.text.toString(),
+                nameController.text.toString());
           }),
           UiHelper.CustomElevatedButton("SignIn", () {
             Navigator.push(context,
